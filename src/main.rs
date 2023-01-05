@@ -1,21 +1,20 @@
-mod components;
-mod error_pages;
+mod error_views;
 mod templates;
 
-use perseus::{Html, PerseusApp, PerseusRoot, SsrNode};
-use sycamore::prelude::View;
+use perseus::prelude::*;
+use sycamore::prelude::*;
 
-#[perseus::main]
+#[perseus::main(perseus_warp::dflt_server)]
 pub fn main<G: Html>() -> PerseusApp<G> {
     PerseusApp::new()
-        .template(crate::templates::index::get_template)
-        .template(crate::templates::about::get_template)
-        .error_pages(crate::error_pages::get_error_pages)
+        .template(crate::templates::index::get_template())
+        .template(crate::templates::about::get_template())
+        .error_views(crate::error_views::get_error_views())
         .index_view(index_view_fn)
 }
 
-pub fn index_view_fn() -> View<SsrNode> {
-    sycamore::view! {
+pub fn index_view_fn(cx:Scope) -> View<SsrNode> {
+    sycamore::view! { cx,
         // We don't need a `<!DOCTYPE html>`, that's added automatically by Perseus (though that can be overriden if you really want by using `.index_view_str()`)
         // We need a `<head>` and a `<body>` at the absolute minimum for Perseus to work properly (otherwise certain script injections will fail)
         head {

@@ -1,20 +1,19 @@
-use perseus::Template;
-use sycamore::prelude::{view, Html, SsrNode, View};
+use perseus::prelude::*;
+use sycamore::prelude::*;
 
-#[perseus::template_rx]
-pub fn about_page() -> View<G> {
-    view! {
+pub fn about_page<G: Html>(cx: Scope) -> View<G> {
+    view! { cx,
         p { "About." }
     }
 }
 
-#[perseus::head]
-pub fn head() -> View<SsrNode> {
-    view! {
+#[engine_only_fn]
+pub fn head(cx: Scope) -> View<SsrNode> {
+    view! { cx,
         title { "About Page | Perseus Example - Basic" }
     }
 }
 
 pub fn get_template<G: Html>() -> Template<G> {
-    Template::new("about").template(about_page).head(head)
+    Template::build("about").view(about_page).head(head).build()
 }
