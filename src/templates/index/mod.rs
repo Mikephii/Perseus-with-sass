@@ -1,41 +1,39 @@
-use crate::components::bar::BarComponent;
-use perseus::{Html, RenderFnResultWithCause, SsrNode, Template};
-use sycamore::prelude::{view, View};
+use perseus::prelude::*;
+use serde::{Deserialize, Serialize};
+use sycamore::prelude::*;
 
-#[perseus::make_rx(IndexPageStateRx)]
+#[derive(Serialize, Deserialize, ReactiveState, Clone)]
+#[rx(alias = "IndexPageStateRx")]
 pub struct IndexPageState {
     pub greeting: String,
 }
 
-#[perseus::template_rx]
-pub fn index_page(state: IndexPageStateRx) -> View<G> {
-    view! {
-        BarComponent()
+#[auto_scope]
+pub fn index_page(cx: Scope, state: &IndexPageStateRx) -> View<G> {
+    view! { cx,
         p(class = "test-class") { (state.greeting.get()) }
         a(href = "about", id = "about-link") { "About!" }
     }
 }
 
 pub fn get_template<G: Html>() -> Template<G> {
-    Template::new("index")
+    Template::build("index")
         .build_state_fn(get_build_state)
-        .template(index_page)
-        .head(head)
+        .view_with_state(index_page)
+        .head_with_state(head)
+        .build()
 }
 
-#[perseus::head]
-pub fn head(_props: IndexPageState) -> View<SsrNode> {
-    view! {
+#[engine_only_fn]
+pub fn head(cx: Scope, _props: IndexPageState) -> View<SsrNode> {
+    view! { cx,
         title{ "Index Page | Perseus Example"}
     }
 }
 
-#[perseus::autoserde(build_state)]
-pub async fn get_build_state(
-    _path: String,
-    _locale: String,
-) -> RenderFnResultWithCause<IndexPageState> {
-    Ok(IndexPageState {
+#[engine_only_fn]
+pub async fn get_build_state(_info: StateGeneratorInfo<()>) -> IndexPageState {
+    IndexPageState {
         greeting: "Hello World!".to_string(),
-    })
+    }
 }
