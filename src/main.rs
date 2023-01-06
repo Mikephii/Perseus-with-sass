@@ -1,5 +1,6 @@
 mod error_views;
 mod templates;
+mod components;
 
 use perseus::prelude::*;
 use sycamore::prelude::*;
