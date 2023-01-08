@@ -1,11 +1,14 @@
 mod error_views;
 mod templates;
 mod components;
+mod api;
 
 use perseus::prelude::*;
 use sycamore::prelude::*;
 
-#[perseus::main(perseus_warp::dflt_server)]
+
+
+#[perseus::main(api::custom_server_fn)]
 pub fn main<G: Html>() -> PerseusApp<G> {
     PerseusApp::new()
         .template(crate::templates::index::get_template())

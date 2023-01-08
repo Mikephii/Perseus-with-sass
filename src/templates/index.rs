@@ -1,7 +1,7 @@
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
-use crate::components::bar;
+// use crate::components::bar;
 
 #[derive(Serialize, Deserialize, ReactiveState, Clone)]
 #[rx(alias = "IndexPageStateRx")]
@@ -12,7 +12,7 @@ pub struct IndexPageState {
 #[auto_scope]
 pub fn index_page(cx: Scope, state: &IndexPageStateRx) -> View<G> {
     view! { cx,
-        bar::cmp()
+        // bar::cmp()
         p(class = "test-class") { (state.greeting.get()) }
         a(href = "about", id = "about-link") { "About!" }
     }

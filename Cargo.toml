@@ -17,6 +17,7 @@ fantoccini = "0.17" #for testing
 [target.'cfg(engine)'.dependencies]
 tokio = { version = "1", features = [ "macros", "rt", "rt-multi-thread" ] }
 perseus-warp = {version="0.4.0-beta.14", features=[ "dflt-server" ]}
+warp = { package = "warp-fix-171", version = "0.3" } # Temporary until Warp #171 is resolved
 
 [build-dependencies]
 glob = "0.3.0"
