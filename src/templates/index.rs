@@ -29,13 +29,9 @@ pub fn get_template<G: Html>() -> Template<G> {
 pub async fn get_build_state(
     _info: StateGeneratorInfo<()>,
 ) -> Result<IndexPageState, BlamedError<reqwest::Error>> {
-    use crate::api::get_posts;
+    use crate::api::get_posts; //gotta get here because this fn only exists on server
 
-    // We'll cache the result with `try_cache_res`, which means we only make the
-    // request once, and future builds will use the cached result (speeds up
-    // development)
-    let testingmessage = get_posts().await?; // Note that `?` is able to convert from `reqwest::Error` ->
-                                             // `BlamedError<reqwest::Error>`
+    let testingmessage = get_posts().await?;
 
     Ok(IndexPageState {
         greeting: testingmessage,

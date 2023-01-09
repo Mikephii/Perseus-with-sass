@@ -1,4 +1,6 @@
 use perseus::engine_only_fn;
+use serde::{Deserialize, Serialize};
+use std::error::Error;
 
 // Note: we use fully-qualified paths in the types to this function so we don't
 // have to target-gate some more imports
@@ -49,12 +51,38 @@ pub async fn custom_server_fn<
     // you put in back to you!
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct Post {
+    title: String,
+    description: String,
+    image: SbImage,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SbImage {
+    id: u32,
+    alt: String,
+    name: String,
+    focus: String,
+    title: String,
+    filename: String,
+    copyright: String,
+    fieldtype: String,
+    is_external_url: bool,
+}
+
 #[engine_only_fn]
-pub async fn get_posts() -> Result<String, reqwest::Error> {
+pub async fn get_posts() -> Result<Vec<Post>, reqwest::Error> {
     let url = "https://api.storyblok.com/v2/cdn/stories?token=T1lVJToB5V7fQxD0f4nRPQtt&version=draft&starts_with=portfolio-items";
-    let json = reqwest::get(url).await?.text().await?;
+    let json: serde_json::Value = reqwest::get(url).await?.json().await?;
 
-    println!("{:#?}", json);
+    if let Some(stories) = json["stories"].as_array() {
+        let posts: Vec<Post> = stories
+            .iter()
+            .map(|story| -> Post { serde_json::from_value(story["content"]).unwrap() })
+            .collect();
 
-    Ok(json)
+        return Ok(posts);
+    }
+    // TODO: custom error
 }
