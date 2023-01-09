@@ -1,7 +1,6 @@
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
-// use crate::components::bar;
 
 #[derive(Serialize, Deserialize, ReactiveState, Clone)]
 #[rx(alias = "IndexPageStateRx")]
@@ -27,15 +26,25 @@ pub fn get_template<G: Html>() -> Template<G> {
 }
 
 #[engine_only_fn]
-pub fn head(cx: Scope, _props: IndexPageState) -> View<SsrNode> {
-    view! { cx,
-        title{ "Index Page | Perseus Example"}
-    }
+pub async fn get_build_state(
+    _info: StateGeneratorInfo<()>,
+) -> Result<IndexPageState, BlamedError<reqwest::Error>> {
+    use crate::api::get_posts;
+
+    // We'll cache the result with `try_cache_res`, which means we only make the
+    // request once, and future builds will use the cached result (speeds up
+    // development)
+    let testingmessage = get_posts().await?; // Note that `?` is able to convert from `reqwest::Error` ->
+                                             // `BlamedError<reqwest::Error>`
+
+    Ok(IndexPageState {
+        greeting: testingmessage,
+    })
 }
 
 #[engine_only_fn]
-pub async fn get_build_state(_info: StateGeneratorInfo<()>) -> IndexPageState {
-    IndexPageState {
-        greeting: "Hello World!".to_string(),
+pub fn head(cx: Scope, _props: IndexPageState) -> View<SsrNode> {
+    view! { cx,
+        title{ "Index Page | Perseus Example"}
     }
 }

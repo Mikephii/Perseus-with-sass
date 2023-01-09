@@ -1,3 +1,5 @@
+use perseus::engine_only_fn;
+
 // Note: we use fully-qualified paths in the types to this function so we don't
 // have to target-gate some more imports
 #[cfg(engine)] // We only have access to `warp` etc. on the engine-side, so this function should only exist tehre
@@ -45,4 +47,14 @@ pub async fn custom_server_fn<
     // If you try going to `/api/echo/test`, you'll get `test` printed back to
     // you! Try replacing `test` with anything else and it'll print whatever
     // you put in back to you!
+}
+
+#[engine_only_fn]
+pub async fn get_posts() -> Result<String, reqwest::Error> {
+    let url = "https://api.storyblok.com/v2/cdn/stories?token=T1lVJToB5V7fQxD0f4nRPQtt&version=draft&starts_with=portfolio-items";
+    let json = reqwest::get(url).await?.text().await?;
+
+    println!("{:#?}", json);
+
+    Ok(json)
 }
