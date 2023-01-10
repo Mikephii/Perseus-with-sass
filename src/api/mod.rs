@@ -1,6 +1,7 @@
 use perseus::engine_only_fn;
+use reqwest;
 use serde::{Deserialize, Serialize};
-use std::error::Error;
+use std::fmt;
 
 // Note: we use fully-qualified paths in the types to this function so we don't
 // have to target-gate some more imports
@@ -53,9 +54,9 @@ pub async fn custom_server_fn<
 
 #[derive(Serialize, Deserialize)]
 pub struct Post {
-    title: String,
-    description: String,
-    image: SbImage,
+    pub title: String,
+    pub description: String,
+    pub image: SbImage,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -71,18 +72,57 @@ pub struct SbImage {
     is_external_url: bool,
 }
 
-#[engine_only_fn]
-pub async fn get_posts() -> Result<Vec<Post>, reqwest::Error> {
-    let url = "https://api.storyblok.com/v2/cdn/stories?token=T1lVJToB5V7fQxD0f4nRPQtt&version=draft&starts_with=portfolio-items";
-    let json: serde_json::Value = reqwest::get(url).await?.json().await?;
+#[derive(Serialize, Deserialize)]
+pub struct Story<T> {
+    name: String,
+    slug: String,
+    content: T,
+}
 
-    if let Some(stories) = json["stories"].as_array() {
-        let posts: Vec<Post> = stories
-            .iter()
-            .map(|story| -> Post { serde_json::from_value(story["content"]).unwrap() })
-            .collect();
+#[derive(Serialize, Deserialize)]
+pub struct SblokStoriesResponse<T> {
+    cv: u32,
+    stories: Vec<Story<T>>,
+}
 
-        return Ok(posts);
+#[derive(Debug)]
+pub enum MyCustomError {
+    HttpError,
+    ParseError,
+}
+impl std::error::Error for MyCustomError {}
+
+impl fmt::Display for MyCustomError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            MyCustomError::HttpError => write!(f, "HTTP Error"),
+            MyCustomError::ParseError => write!(f, "Parse Error"),
+        }
     }
-    // TODO: custom error
+}
+
+impl From<reqwest::Error> for MyCustomError {
+    fn from(_: reqwest::Error) -> Self {
+        MyCustomError::HttpError
+    }
+}
+
+impl From<serde_json::Error> for MyCustomError {
+    fn from(_: serde_json::Error) -> Self {
+        MyCustomError::ParseError
+    }
+}
+
+#[engine_only_fn]
+pub async fn get_posts() -> Result<Vec<Post>, MyCustomError> {
+    let url = "https://api.storyblok.com/v2/cdn/stories?token=T1lVJToB5V7fQxD0f4nRPQtt&version=draft&starts_with=portfolio-items";
+    let response: SblokStoriesResponse<Post> = reqwest::get(url).await?.json().await?;
+
+    let posts: Vec<Post> = response
+        .stories
+        .into_iter()
+        .map(|story| story.content)
+        .collect();
+
+    Ok(posts)
 }

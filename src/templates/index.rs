@@ -1,3 +1,4 @@
+use crate::api::{MyCustomError, Post};
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
@@ -28,13 +29,13 @@ pub fn get_template<G: Html>() -> Template<G> {
 #[engine_only_fn]
 pub async fn get_build_state(
     _info: StateGeneratorInfo<()>,
-) -> Result<IndexPageState, BlamedError<reqwest::Error>> {
+) -> Result<IndexPageState, BlamedError<MyCustomError>> {
     use crate::api::get_posts; //gotta get here because this fn only exists on server
 
-    let testingmessage = get_posts().await?;
+    let mut posts: Vec<Post> = get_posts().await?;
 
     Ok(IndexPageState {
-        greeting: testingmessage,
+        greeting: posts.remove(0).title,
     })
 }
 
