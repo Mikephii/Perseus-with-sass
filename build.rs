@@ -9,7 +9,7 @@ use std::{
 use rsass::{compile_scss, output};
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let scss_output = "./static/.styles.css";
+    let scss_output = "./dist/static/.styles.css";
     let mut scss = File::create(scss_output)?;
 
     let mut contents =

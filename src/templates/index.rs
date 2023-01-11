@@ -1,4 +1,5 @@
-use crate::api::{MyCustomError, Post};
+use crate::components::bar;
+use crate::{storyblok, storyblok::utility_types::SbImage};
 use perseus::prelude::*;
 use serde::{Deserialize, Serialize};
 use sycamore::prelude::*;
@@ -12,7 +13,7 @@ pub struct IndexPageState {
 #[auto_scope]
 pub fn index_page(cx: Scope, state: &IndexPageStateRx) -> View<G> {
     view! { cx,
-        // bar::cmp()
+        bar::cmp()
         p(class = "test-class") { (state.greeting.get()) }
         a(href = "about", id = "about-link") { "About!" }
     }
@@ -26,13 +27,18 @@ pub fn get_template<G: Html>() -> Template<G> {
         .build()
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct Post {
+    pub title: String,
+    pub description: String,
+    pub image: SbImage,
+}
+
 #[engine_only_fn]
 pub async fn get_build_state(
     _info: StateGeneratorInfo<()>,
-) -> Result<IndexPageState, BlamedError<MyCustomError>> {
-    use crate::api::get_posts; //gotta get here because this fn only exists on server
-
-    let mut posts: Vec<Post> = get_posts().await?;
+) -> Result<IndexPageState, BlamedError<storyblok::errors::MyCustomError>> {
+    let mut posts: Vec<Post> = storyblok::get_content().await?;
 
     Ok(IndexPageState {
         greeting: posts.remove(0).title,

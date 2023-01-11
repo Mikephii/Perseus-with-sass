@@ -2,6 +2,7 @@ mod error_views;
 mod templates;
 mod components;
 mod api;
+mod storyblok;
 
 use perseus::prelude::*;
 use sycamore::prelude::*;

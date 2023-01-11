@@ -1,8 +1,3 @@
-use perseus::engine_only_fn;
-use reqwest;
-use serde::{Deserialize, Serialize};
-use std::fmt;
-
 // Note: we use fully-qualified paths in the types to this function so we don't
 // have to target-gate some more imports
 #[cfg(engine)] // We only have access to `warp` etc. on the engine-side, so this function should only exist tehre
@@ -50,79 +45,4 @@ pub async fn custom_server_fn<
     // If you try going to `/api/echo/test`, you'll get `test` printed back to
     // you! Try replacing `test` with anything else and it'll print whatever
     // you put in back to you!
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Post {
-    pub title: String,
-    pub description: String,
-    pub image: SbImage,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct SbImage {
-    id: u32,
-    alt: String,
-    name: String,
-    focus: String,
-    title: String,
-    filename: String,
-    copyright: String,
-    fieldtype: String,
-    is_external_url: bool,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct Story<T> {
-    name: String,
-    slug: String,
-    content: T,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct SblokStoriesResponse<T> {
-    cv: u32,
-    stories: Vec<Story<T>>,
-}
-
-#[derive(Debug)]
-pub enum MyCustomError {
-    HttpError,
-    ParseError,
-}
-impl std::error::Error for MyCustomError {}
-
-impl fmt::Display for MyCustomError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            MyCustomError::HttpError => write!(f, "HTTP Error"),
-            MyCustomError::ParseError => write!(f, "Parse Error"),
-        }
-    }
-}
-
-impl From<reqwest::Error> for MyCustomError {
-    fn from(_: reqwest::Error) -> Self {
-        MyCustomError::HttpError
-    }
-}
-
-impl From<serde_json::Error> for MyCustomError {
-    fn from(_: serde_json::Error) -> Self {
-        MyCustomError::ParseError
-    }
-}
-
-#[engine_only_fn]
-pub async fn get_posts() -> Result<Vec<Post>, MyCustomError> {
-    let url = "https://api.storyblok.com/v2/cdn/stories?token=T1lVJToB5V7fQxD0f4nRPQtt&version=draft&starts_with=portfolio-items";
-    let response: SblokStoriesResponse<Post> = reqwest::get(url).await?.json().await?;
-
-    let posts: Vec<Post> = response
-        .stories
-        .into_iter()
-        .map(|story| story.content)
-        .collect();
-
-    Ok(posts)
 }
