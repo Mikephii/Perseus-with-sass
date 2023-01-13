@@ -1,6 +1,7 @@
 use reqwest;
 use serde_json;
 use std::fmt;
+use url;
 
 #[derive(Debug)]
 pub enum MyCustomError {
@@ -26,6 +27,12 @@ impl From<reqwest::Error> for MyCustomError {
 
 impl From<serde_json::Error> for MyCustomError {
     fn from(_: serde_json::Error) -> Self {
+        MyCustomError::ParseError
+    }
+}
+
+impl From<url::ParseError> for MyCustomError {
+    fn from(_: url::ParseError) -> Self {
         MyCustomError::ParseError
     }
 }

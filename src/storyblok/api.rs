@@ -1,6 +1,7 @@
 use super::errors::MyCustomError;
 use reqwest;
 use serde::{Deserialize, Serialize};
+use url::Url;
 
 #[derive(Serialize, Deserialize)]
 pub struct Story<T> {
@@ -19,8 +20,15 @@ pub async fn get_content<T>() -> Result<Vec<T>, MyCustomError>
 where
     T: Serialize + for<'a> Deserialize<'a>,
 {
-    let url = "https://api.storyblok.com/v2/cdn/stories?token=T1lVJToB5V7fQxD0f4nRPQtt&version=draft&starts_with=portfolio-items";
-    let response: SblokStoriesResponse<T> = reqwest::get(url).await?.json().await?;
+    let mut url = Url::parse("https://api.storyblok.com/v2/cdn/stories")?;
+    // ?token=T1lVJToB5V7fQxD0f4nRPQtt&version=draft&starts_with=portfolio-items
+
+    url.query_pairs_mut()
+        .append_pair("token", "T1lVJToB5V7fQxD0f4nRPQtt")
+        .append_pair("version", "draft")
+        .append_pair("starts_with", "portfolio-items");
+
+    let response: SblokStoriesResponse<T> = reqwest::get(url.as_str()).await?.json().await?;
 
     let content_items: Vec<T> = response
         .stories
