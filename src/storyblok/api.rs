@@ -38,3 +38,19 @@ where
 
     Ok(content_items)
 }
+
+pub struct Client {
+    token: String,
+}
+
+struct ClientBuilder {
+    token: Option<String>,
+}
+
+impl ClientBuilder {
+    pub fn new() -> ClientBuilder {
+        ClientBuilder {}
+    }
+}
+
+// client::build()
