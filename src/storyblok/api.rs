@@ -24,7 +24,7 @@ where
     // ?token=T1lVJToB5V7fQxD0f4nRPQtt&version=draft&starts_with=portfolio-items
 
     url.query_pairs_mut()
-        .append_pair("token", "T1lVJToB5V7fQxD0f4nRPQtt")
+        .append_pair("token", "T1lVJToB5V7fQxD0f4nRPQtt") // public token
         .append_pair("version", "draft")
         .append_pair("starts_with", "portfolio-items");
 
